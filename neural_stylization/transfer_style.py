@@ -267,6 +267,9 @@ class Stylizer(object):
                  image_size: tuple=None,
                  initialization_strat: str='noise',
                  noise_range: tuple=(0, 1),
+                 given: np.array = None,
+                 save_path: str = 'img/res/adam-seated-nude.png',
+                 save_freq: int = 1,
                  callback: Callable=None) -> Image:
         """
         Stylize the given content image with the give style image.
@@ -310,11 +313,18 @@ class Stylizer(object):
         elif initialization_strat == 'style':
             # copy the style as the initial image
             initial = style.copy()
+        elif initialization_strat == 'given':
+            initial = normalize(image_to_matrix(given))
         else:
             raise ValueError(
                 "`initialization_strat` must be one of: ",
                 " 'noise', 'content', 'style' "
             )
+
+        def matrix_to_image_func(matrix):
+            matrix = matrix.reshape(canvas.shape)[0]
+            matrix = denormalize(matrix)
+            return matrix_to_image(matrix)
 
         # optimize the initial image into a synthetic painting. Name all args
         # by keyword to help catch erroneous optimize callables.
@@ -323,7 +333,10 @@ class Stylizer(object):
             shape=canvas.shape,
             loss_grads=loss_grads,
             iterations=iterations,
-            callback=callback
+            callback=callback,
+            save_path=save_path,
+            save_freq=save_freq,
+            convert_func=matrix_to_image_func
         )
 
         # clear the Keras session (this removes the variables from memory).

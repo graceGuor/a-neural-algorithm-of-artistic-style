@@ -150,6 +150,7 @@ class VGG_19(Model):
             # already a Keras tensor / input layer. return as is
             return self.input_tensor
 
+
     def _build_main_blocks(self, x: Tensor) -> Tensor:
         """
         Build and return the main blocks of the network.
